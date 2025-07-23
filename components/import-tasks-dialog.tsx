@@ -10,12 +10,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useToast } from "@/hooks/use-toast"
-import { importTasksFromXlsx } from "@/actions/tasks"
+} from "../components/ui/dialog"
+import { Button } from "../components/ui/button"
+import { Input } from "../components/ui/input"
+import { Label } from "../components/ui/label"
+import { useToast } from "../hooks/use-toast"
+import { importTasksFromXlsx } from "../actions/tasks"
 import { useActionState } from "react"
 
 interface ImportTasksDialogProps {
