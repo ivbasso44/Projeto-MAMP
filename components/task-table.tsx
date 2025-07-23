@@ -36,7 +36,7 @@ import { ArrowDown, ArrowUp, Import, MoreHorizontal, Share2 } from "lucide-react
 // Update the path below to the correct location of your task validation schema
 // import { taskSchema } from "../lib/validations/task"
 // Update the path below to the correct location of your task validation schema
-import { taskSchema } from "../lib/validations/task"
+import { taskSchema, createTaskSchema, CreateTaskFormData } from "../lib/validations/task"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -65,6 +65,8 @@ import {
 } from "../components/ui/alert-dialog"
 
 import { AggregatedTaskDisplay } from "../types/supabase"
+import { createTask } from "../actions/tasks"
+import { toast } from "sonner"
 
 export type Task = z.infer<typeof taskSchema>
 
@@ -80,8 +82,6 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
   const [sortColumn, setSortColumn] = useState<keyof AggregatedTaskDisplay | "status" | null>("next_due_at")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
   const [isExporting, setIsExporting] = useState(false)
-  const { toast } = useToast()
-  const router = useRouter() // Inicialize useRouter
 
   const columns: ColumnDef<AggregatedTaskDisplay>[] = [
     {
@@ -181,8 +181,7 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
               <DropdownMenuItem
                 onClick={() => {
                   navigator.clipboard.writeText(task.id)
-                  toast({
-                    title: "Copiado para área de transferência.",
+                  toast.success("Copiado para área de transferência.", {
                     description: "ID da tarefa copiado.",
                   })
                 }}
@@ -218,26 +217,56 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
     },
   })
 
-  const deleteAllTasksFormSchema = z.object({
-    title: z.string().min(2, {
-      message: "Título deve ter pelo menos 2 caracteres.",
+  const createTaskFormSchema = z.object({
+    name: z.string().min(2, {
+      message: "Nome deve ter pelo menos 2 caracteres.",
     }),
-    description: z.string().min(10, {
-      message: "Descrição deve ter pelo menos 10 caracteres.",
+    workStations: z.array(z.string()).min(1, {
+      message: "Selecione pelo menos um posto de trabalho.",
     }),
-    due_date: z.date(),
+    frequencyDays: z.number().min(1, {
+      message: "Frequência deve ser pelo menos 1 dia.",
+    }),
   })
 
-  type DeleteAllTasksFormValues = z.infer<typeof deleteAllTasksFormSchema>
+  type CreateTaskFormValues = z.infer<typeof createTaskFormSchema>
 
-  const deleteAllTasksForm = useForm<DeleteAllTasksFormValues>({
-    resolver: zodResolver(deleteAllTasksFormSchema),
+  const createTaskForm = useForm<CreateTaskFormValues>({
+    resolver: zodResolver(createTaskFormSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      due_date: new Date(),
+      name: "",
+      workStations: [],
+      frequencyDays: 1,
     },
   })
+
+  const handleCreateTask = async (data: CreateTaskFormValues) => {
+    try {
+      const result = await createTask({
+        name: data.name,
+        workStations: data.workStations,
+        frequencyDays: data.frequencyDays
+      })
+      
+      if (result.success) {
+        toast.success("Tarefa criada com sucesso!", {
+          description: result.message || "A nova tarefa foi adicionada à sua lista.",
+        })
+        createTaskForm.reset()
+        setIsCreateTaskDialogOpen(false)
+        window.location.reload() // Refresh the page to show the new task
+      } else {
+        toast.error("Erro ao criar tarefa", {
+          description: result.message || "Ocorreu um erro inesperado.",
+        })
+      }
+    } catch (error) {
+      console.error("Error creating task:", error)
+      toast.error("Erro ao criar tarefa", {
+        description: "Ocorreu um erro inesperado. Tente novamente.",
+      })
+    }
+  }
 
   const handleDeleteAllTasks = async () => {
     // Atualize o caminho abaixo para o local correto do seu arquivo de actions
@@ -258,14 +287,12 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
 
     if (result.success) {
       setTasks([]) // Limpa o estado local das tarefas
-      toast({
-        title: "Sucesso!",
+      toast.success("Sucesso!", {
         description: result.message,
       })
-      router.refresh() // Força a revalidação dos dados no servidor
+      window.location.reload() // Força a revalidação dos dados no servidor
     } else {
-      toast({
-        title: "Erro ao Excluir",
+      toast.error("Erro ao Excluir", {
         description: result.message || "Não foi possível excluir todas as tarefas.",
       })
     }
@@ -279,17 +306,17 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
             <DialogTitle>Criar Nova Tarefa</DialogTitle>
             <DialogDescription>Crie uma nova tarefa para sua lista de tarefas.</DialogDescription>
           </DialogHeader>
-          <Form {...deleteAllTasksForm}>
-            <form onSubmit={deleteAllTasksForm.handleSubmit((data) => console.log(data))} className="space-y-4">
+          <Form {...createTaskForm}>
+            <form onSubmit={createTaskForm.handleSubmit(handleCreateTask)} className="space-y-4">
               <FormField
-                control={deleteAllTasksForm.control}
-                name="title"
+                control={createTaskForm.control}
+                name="name"
                 render={({ field }: { field: any }) => {
                   return (
                     <FormItem>
-                      <FormLabel>Título</FormLabel>
+                      <FormLabel>Nome da Tarefa</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: Comprar pão" {...field} />
+                        <Input placeholder="Ex: Limpeza da máquina" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -297,36 +324,54 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
                 }}
               />
               <FormField
-                control={deleteAllTasksForm.control}
-                name="description"
+                control={createTaskForm.control}
+                name="workStations"
                 render={({ field }: { field: any }) => (
                   <FormItem>
-                    <FormLabel>Descrição</FormLabel>
+                    <FormLabel>Postos de Trabalho</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Ex: Comprar pão na padaria da esquina" {...field} />
+                      <Input 
+                        placeholder="Ex: Posto 1, Posto 2 (separados por vírgula)" 
+                        onChange={(e) => {
+                          const value = e.target.value
+                          const stations = value.split(',').map(s => s.trim()).filter(s => s.length > 0)
+                          field.onChange(stations)
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               <FormField
-                control={deleteAllTasksForm.control}
-                name="due_date"
+                control={createTaskForm.control}
+                name="frequencyDays"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Data de Vencimento</FormLabel>
-                    <DatePicker
-                      onSelect={field.onChange}
-                      className={cn(
-                        "peer h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-                        field.value ? "text-foreground" : "text-muted-foreground",
-                      )}
-                    />
+                    <FormLabel>Frequência (dias)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number"
+                        min="1"
+                        placeholder="1"
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                        defaultValue={1}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit">Criar</Button>
+              <div className="flex justify-end space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsCreateTaskDialogOpen(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit">Criar Tarefa</Button>
+              </div>
             </form>
           </Form>
         </DialogContent>
@@ -338,7 +383,10 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
             <DialogTitle>Importar Tarefas</DialogTitle>
             <DialogDescription>Importe tarefas de um arquivo CSV.</DialogDescription>
           </DialogHeader>
-          <ImportTasks setTasks={setTasks} onClose={() => setIsImportTasksDialogOpen(false)} />
+          {/* <ImportTasks setTasks={setTasks} onClose={() => setIsImportTasksDialogOpen(false)} /> */}
+          <div className="p-4">
+            <p>Funcionalidade de importação em desenvolvimento...</p>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -350,15 +398,10 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
               <Import className="mr-2 h-4 w-4" />
               Importar
             </Button>
-            <ExportTasks
-              tasks={tasks}
-              disabled={isExporting}
-              onStart={() => setIsExporting(true)}
-              onEnd={() => setIsExporting(false)}
-            >
+            <Button disabled>
               <Share2 className="mr-2 h-4 w-4" />
-              Exportar
-            </ExportTasks>
+              Exportar (em desenvolvimento)
+            </Button>
             <Button onClick={() => setIsCreateTaskDialogOpen(true)} className="w-full sm:w-auto">
               Criar Nova Tarefa
             </Button>

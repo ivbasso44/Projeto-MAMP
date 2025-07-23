@@ -1,19 +1,19 @@
 "use client"
 
 import { useState } from "react"
-import { TableCell, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { markTaskAsDone, deleteTask } from "@/actions/tasks"
-import { formatDate, getTaskStatus } from "@/lib/utils"
+import { TableCell, TableRow } from "./ui/table"
+import { Button } from "./ui/button"
+import { Badge } from "./ui/badge"
+import { markTaskAsDone, deleteTask } from "../actions/tasks"
+import { formatDate, getTaskStatus } from "../lib/utils"
 import { HistoryModal } from "./history-modal"
 import { AddObservationModal } from "./add-observation-modal"
-import type { TaskWithDefinition, AggregatedTaskDisplay } from "@/types/supabase" // Importe os novos tipos
+import type { TaskWithDefinition, AggregatedTaskDisplay } from "../types/supabase" // Importe os novos tipos
 import { EditTaskDialog } from "./edit-task-dialog"
 import { DeleteTaskAlert } from "./delete-task-alert"
 import { PencilIcon, Trash2Icon } from "lucide-react"
 import { WorkStationsModal } from "./work-stations-modal"
-import { useToast } from "@/hooks/use-toast" // Importe o hook useToast
+import { toast } from "sonner"
 
 interface TaskRowProps {
   task: AggregatedTaskDisplay // Altera o tipo aqui
@@ -28,7 +28,6 @@ export function TaskRow({ task, onTaskUpdate, onTaskDelete }: TaskRowProps) {
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showDeleteAlert, setShowDeleteAlert] = useState(false)
   const [showWorkStationsModal, setShowWorkStationsModal] = useState(false)
-  const { toast } = useToast() // Inicialize o toast
 
   const status = getTaskStatus(task.next_due_at || null)
 
@@ -39,18 +38,14 @@ export function TaskRow({ task, onTaskUpdate, onTaskDelete }: TaskRowProps) {
     const result = await markTaskAsDone(task.id, observation)
     if (result.success && result.updatedInstance) {
       // Precisamos adicionar o nome da definição à instância atualizada para o onTaskUpdate
-      onTaskUpdate({ ...result.updatedInstance, name: task.name, project_id: task.project_id })
-      toast({
-        title: "Sucesso!",
+      onTaskUpdate({ ...result.updatedInstance, name: task.name, project_id: undefined })
+      toast.success("Sucesso!", {
         description: result.toastMessage,
-        variant: "default",
       })
     } else {
       console.error(result.message)
-      toast({
-        title: "Erro",
+      toast.error("Erro", {
         description: result.toastMessage || "Não foi possível marcar a tarefa como concluída.",
-        variant: "destructive",
       })
     }
     setIsMarking(false)
@@ -62,17 +57,13 @@ export function TaskRow({ task, onTaskUpdate, onTaskDelete }: TaskRowProps) {
     const result = await deleteTask(task.id)
     if (result.success) {
       onTaskDelete(task.id)
-      toast({
-        title: "Sucesso!",
+      toast.success("Sucesso!", {
         description: result.toastMessage,
-        variant: "default",
       })
     } else {
       console.error(result.message)
-      toast({
-        title: "Erro",
+      toast.error("Erro", {
         description: result.toastMessage || "Não foi possível excluir a tarefa.",
-        variant: "destructive",
       })
     }
   }
@@ -128,10 +119,10 @@ export function TaskRow({ task, onTaskUpdate, onTaskDelete }: TaskRowProps) {
         </div>
       </TableCell>
       <TableCell className="text-center">{task.frequency_days}</TableCell>
-      <TableCell className="text-center">{formatDate(task.last_executed_at)}</TableCell>
-      <TableCell className="text-center">{formatDate(task.next_due_at)}</TableCell>
+      <TableCell className="text-center">{formatDate(task.last_executed_at || null)}</TableCell>
+      <TableCell className="text-center">{formatDate(task.next_due_at || null)}</TableCell>
       <TableCell className="text-center">
-        <Badge variant={getStatusBadgeVariant(status)}>{getStatusBadgeText(status)}</Badge>
+        <Badge variant={getStatusBadgeVariant(status) as "default" | "destructive" | "secondary" | "outline"}>{getStatusBadgeText(status)}</Badge>
       </TableCell>
       <TableCell className="text-right flex gap-2 justify-end">
         <Button variant="outline" size="sm" onClick={() => setShowObservationModal(true)} disabled={isMarking}>
