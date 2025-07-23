@@ -2,6 +2,9 @@ import { getUserSession } from "@/actions/auth"
 import { UserProfile } from "@/components/user-profile"
 import { redirect } from "next/navigation"
 
+// Força a página a ser dinâmica (não pre-renderizada no build)
+export const dynamic = 'force-dynamic'
+
 export default async function ProfilePage() {
   const session = await getUserSession()
 
