@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%; /* Branco */
+    --foreground: 222.2 47.4% 11.2%; /* Quase preto */
+
+    --muted: 210 40% 96.1%; /* Cinza claro */
+    --muted-foreground: 215.4 16.3% 46.9%; /* Cinza médio */
+
+    --popover: 0 0% 100%; /* Branco */
+    --popover-foreground: 222.2 47.4% 11.2%; /* Quase preto */
+
+    --card: 0 0% 100%; /* Branco */
+    --card-foreground: 222.2 47.4% 11.2%; /* Quase preto */
+
+    --border: 214.3 31.8% 91.4%; /* Cinza borda */
+    --input: 214.3 31.8% 91.4%; /* Cinza input */
+    --ring: 222.2 47.4% 11.2%; /* Cor do foco */
+
+    --primary: 142.1 76.2% 36.3%; /* Verde escuro */
+    --primary-foreground: 355.7 100% 99.4%; /* Branco quase puro */
+
+    --secondary: 210 40% 96.1%; /* Cinza claro */
+    --secondary-foreground: 222.2 47.4% 11.2%; /* Quase preto */
+
+    --accent: 210 40% 96.1%; /* Cinza claro */
+    --accent-foreground: 222.2 47.4% 11.2%; /* Quase preto */
+
+    --destructive: 0 84.2% 60.2%; /* Vermelho */
+    --destructive-foreground: 0 0% 98%; /* Branco */
+
+    --warning: 48 96% 50%; /* Amarelo vibrante para aviso */
+    --warning-foreground: 222.2 47.4% 11.2%; /* Quase preto */
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 47.4% 11.2%; /* Quase preto */
+    --foreground: 210 40% 96.1%; /* Cinza claro */
+
+    --muted: 217.2 32.6% 17.5%; /* Cinza escuro */
+    --muted-foreground: 215 20.2% 65.1%; /* Cinza médio */
+
+    --popover: 222.2 47.4% 11.2%; /* Quase preto */
+    --popover-foreground: 210 40% 96.1%; /* Cinza claro */
+
+    --card: 222.2 47.4% 11.2%; /* Quase preto */
+    --card-foreground: 210 40% 96.1%; /* Cinza claro */
+
+    --border: 217.2 32.6% 17.5%; /* Cinza borda */
+    --input: 217.2 32.6% 17.5%; /* Cinza input */
+    --ring: 212.7 26.8% 83.9%; /* Cor do foco */
+
+    --primary: 142.1 76.2% 36.3%; /* Verde escuro (mantido para contraste) */
+    --primary-foreground: 355.7 100% 99.4%; /* Branco quase puro */
+
+    --secondary: 217.2 32.6% 17.5%; /* Cinza escuro */
+    --secondary-foreground: 210 40% 96.1%; /* Cinza claro */
+
+    --accent: 217.2 32.6% 17.5%; /* Cinza escuro */
+    --accent-foreground: 210 40% 96.1%; /* Cinza claro */
+
+    --destructive: 0 62.8% 30.6%; /* Vermelho escuro */
+    --destructive-foreground: 0 0% 98%; /* Branco */
+
+    --warning: 48 96% 50%; /* Amarelo vibrante para aviso */
+    --warning-foreground: 222.2 47.4% 11.2%; /* Quase preto */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Estilo para dias com tarefas agendadas no calendário */
+.rdp-day_task-due {
+  position: relative;
+}
+
+.rdp-day_task-due::after {
+  content: "";
+  position: absolute;
+  bottom: 6px; /* Ajusta a posição do ponto a partir da parte inferior */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px; /* Tamanho do ponto */
+  height: 5px; /* Tamanho do ponto */
+  background-color: hsl(var(--primary)); /* Cor do ponto (usando a cor primária do seu tema) */
+  border-radius: 50%; /* Torna-o um círculo */
+  z-index: 1; /* Garante que o ponto fique acima de outros elementos do dia */
+}
+
+/* Garante que o ponto seja visível e mude de cor quando o dia com tarefa é selecionado */
+.rdp-day_selected.rdp-day_task-due::after {
+  background-color: hsl(var(--primary-foreground)); /* Cor do ponto muda para o foreground da primária quando selecionado */
+}
+
+/* Opcional: Ajuste a cor do ponto para o dia atual se ele também tiver uma tarefa */
+.rdp-day_today.rdp-day_task-due::after {
+  background-color: hsl(var(--accent-foreground)); /* Exemplo: uma cor diferente para o ponto do dia atual com tarefa */
+}
