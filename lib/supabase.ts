@@ -1,36 +1,30 @@
 import { createClient } from "@supabase/supabase-js"
-import type { Database } from "../types/supabase"
-// Remove o import de cookies, pois não será mais usado para autenticação de sessão
-// Simplifica createServerClient para não usar o adaptador de cookies para autenticação
-// Ele ainda será usado para interagir com o banco de dados.
 
-// Nova versão de createServerClient sem o adaptador de cookies para autenticação
 export const createServerClient = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  // Use as variáveis de ambiente SEM o prefixo NEXT_PUBLIC_ para o lado do servidor
+  const supabaseUrl = process.env.SUPABASE_URL
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY // Ou process.env.SUPABASE_SERVICE_ROLE_KEY se precisar de privilégios de admin
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error("Missing Supabase environment variables")
+    throw new Error("Missing Supabase environment variables for server-side client.")
   }
 
-  // Retorne o cliente Supabase sem o adaptador de cookies para autenticação
-  // Ele ainda pode ser usado para operações de banco de dados.
-  return createClient<Database>(supabaseUrl, supabaseAnonKey)
+  return createClient(supabaseUrl, supabaseAnonKey)
 }
 
-// Crie um cliente Supabase para uso no cliente (componentes React)
-// Usamos o padrão singleton para evitar múltiplas instâncias no cliente
-let supabaseClient: ReturnType<typeof createClient<Database>> | undefined
+// createBrowserClient permanece inalterado, pois já usa as variáveis corretas para o cliente
+let supabaseClient: ReturnType<typeof createClient> | undefined
 
 export const createBrowserClient = () => {
   if (!supabaseClient) {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      throw new Error("Missing Supabase environment variables")
+      throw new Error("Missing Supabase environment variables for browser-side client.")
     }
-    supabaseClient = createClient<Database>(
+    supabaseClient = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     )
   }
   return supabaseClient
 }
+

@@ -40,9 +40,6 @@ export async function signIn(previousState: any, formData: FormData): Promise<Au
     return { success: false, message: userMessage }
   }
 
-  // A sessão já deve estar disponível nos cookies após signInWithPassword
-  // Não é estritamente necessário chamar getSession aqui novamente,
-  // mas mantemos para fins de log e depuração.
   const {
     data: { session },
   } = await supabase.auth.getSession()
@@ -53,8 +50,8 @@ export async function signIn(previousState: any, formData: FormData): Promise<Au
   )
 
   console.log("Login bem-sucedido para:", email)
-  revalidatePath("/", "layout") // Revalida o cache da página principal
-  redirect("/") // Redireciona diretamente no servidor
+  revalidatePath("/", "layout")
+  redirect("/")
 }
 
 export async function signUp(previousState: any, formData: FormData): Promise<AuthActionResult> {
@@ -109,7 +106,7 @@ export async function signOut() {
   const supabase = createServerClient()
   await supabase.auth.signOut()
   revalidatePath("/", "layout")
-  redirect("/auth/sign-in") // Este redirect pode permanecer, pois não está ligado a useActionState
+  redirect("/auth/sign-in")
 }
 
 export async function getUserSession() {
@@ -117,7 +114,7 @@ export async function getUserSession() {
   console.log("getUserSession: Tentando obter sessão...")
   const {
     data: { session },
-    error, // Captura o erro aqui também
+    error,
   } = await supabase.auth.getSession()
 
   if (error) {
