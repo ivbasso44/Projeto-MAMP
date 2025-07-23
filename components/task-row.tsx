@@ -30,7 +30,7 @@ export function TaskRow({ task, onTaskUpdate, onTaskDelete }: TaskRowProps) {
   const [showWorkStationsModal, setShowWorkStationsModal] = useState(false)
   const { toast } = useToast() // Inicialize o toast
 
-  const status = getTaskStatus(task.next_due_at)
+  const status = getTaskStatus(task.next_due_at || null)
 
   const handleMarkAsDone = async (observation: string | null) => {
     setIsMarking(true)
@@ -39,7 +39,7 @@ export function TaskRow({ task, onTaskUpdate, onTaskDelete }: TaskRowProps) {
     const result = await markTaskAsDone(task.id, observation)
     if (result.success && result.updatedInstance) {
       // Precisamos adicionar o nome da definição à instância atualizada para o onTaskUpdate
-      onTaskUpdate({ ...result.updatedInstance, name: task.name })
+      onTaskUpdate({ ...result.updatedInstance, name: task.name, project_id: task.project_id })
       toast({
         title: "Sucesso!",
         description: result.toastMessage,

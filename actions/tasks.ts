@@ -166,6 +166,11 @@ export async function createTask({
   const now = new Date()
   const nextDueDate = addDaysAndAdjustForWeekends(now, freq) // Updated function call
 
+  // Verificar se taskDefinition existe antes de continuar
+  if (!taskDefinition) {
+    return { success: false, message: "Erro: Definição da tarefa não foi criada.", toastMessage: "Erro ao criar tarefa." }
+  }
+
   // Dentro da função `createTask`, antes da inserção em `task_instances`:
   const newInstanceId = crypto.randomUUID()
 
@@ -437,7 +442,8 @@ export async function importTasksFromXlsx(
 
     // Verificar se todos os cabeçalhos esperados estão presentes e nos locais corretos
     for (const header in expectedHeaders) {
-      if (!actualHeaders[header] || actualHeaders[header] !== expectedHeaders[header]) {
+      const expectedHeader = header as keyof typeof expectedHeaders
+      if (!actualHeaders[header] || actualHeaders[header] !== expectedHeaders[expectedHeader]) {
         return {
           success: false,
           message: `Cabeçalho "${header}" não encontrado ou na posição incorreta. Verifique a estrutura do arquivo.`,
@@ -446,7 +452,7 @@ export async function importTasksFromXlsx(
       }
     }
 
-    const importedInstances: Omit<TaskInstance, "created_at" | "task_definition_id">[] = [] // Removido 'id' daqui
+    const importedInstances: Array<Omit<TaskInstance, "created_at" | "task_definition_id"> & { name: string }> = [] // Adicionado 'name' temporariamente
     const taskDefinitionsToCreate: { name: string; id?: string }[] = []
     const taskDefinitionMap = new Map<string, string>() // Map<name, id>
 

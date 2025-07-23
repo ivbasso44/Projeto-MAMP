@@ -1,7 +1,7 @@
 // actions/import-tasks.ts
 "use server"
 
-import { parseTaskXLSX } from "@/lib/xlsx-parser"
+import { parseTaskXLSX } from "@/utils/xlsx-parser"
 import { createClient } from "@supabase/supabase-js"
 
 export async function importTasks(formData: FormData) {

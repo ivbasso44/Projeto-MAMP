@@ -1,7 +1,7 @@
 "use client"
 
-import { CommandGroup } from "@/components/ui/command"
-import { CommandEmpty } from "@/components/ui/command"
+import { CommandGroup } from "../components/ui/command"
+import { CommandEmpty } from "../components/ui/command"
 import { useEffect, useState } from "react"
 import {
   Dialog,
@@ -10,19 +10,20 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Command, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { Checkbox } from "@/components/ui/checkbox"
-import { editTask } from "@/actions/tasks"
-import { TASK_NAME_OPTIONS, WORK_STATION_OPTIONS } from "@/lib/constants"
+} from "../components/ui/dialog" // Corrigido o caminho do import
+import { Button } from "../components/ui/button"
+import { Input } from "../components/ui/input"
+import { Label } from "../components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
+import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover"
+import { Command, CommandInput, CommandItem, CommandList } from "../components/ui/command"
+// import { Checkbox } from "@/components/ui/checkbox"
+import { Checkbox } from "../components/ui/checkbox"
+import { editTask } from "../actions/tasks"
+import { TASK_NAME_OPTIONS, WORK_STATION_OPTIONS } from "../lib/constants"
 import { ChevronsUpDown } from "lucide-react"
-import type { TaskWithDefinition, TaskInstance } from "@/types/supabase" // Alterado para TaskWithDefinition, TaskInstance
-import { useToast } from "@/hooks/use-toast"
+import type { TaskWithDefinition, TaskInstance } from "../types/supabase" // Corrigido o caminho do import
+import { useToast } from "../hooks/use-toast"
 
 interface EditTaskDialogProps {
   isOpen: boolean
@@ -76,11 +77,12 @@ export function EditTaskDialog({ isOpen, onClose, taskInstance, taskName, onTask
 
     if (result.success && result.updatedInstance) {
       onTaskUpdated(result.updatedInstance)
-      toast({
-        title: "Sucesso!",
-        description: result.toastMessage,
-        variant: "default",
-      })
+      // toast({
+      //   title: "Sucesso!",
+      //   description: result.toastMessage,
+      //   variant: "default",
+      // })
+      console.log("Sucesso:", result.toastMessage)
       onClose()
     } else {
       setError(result.message || "Erro desconhecido ao editar a tarefa.")
@@ -88,7 +90,7 @@ export function EditTaskDialog({ isOpen, onClose, taskInstance, taskName, onTask
         title: "Erro",
         description: result.toastMessage || "Não foi possível editar a tarefa.",
         variant: "destructive",
-      })
+      } as any)
     }
     setIsLoading(false)
   }

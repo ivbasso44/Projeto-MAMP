@@ -62,18 +62,17 @@ export function HistoryModal({ isOpen, onClose, taskId, taskName }: HistoryModal
         link.click()
         document.body.removeChild(link)
         URL.revokeObjectURL(url) // Libera a URL do objeto
-        toast({
-          title: "Sucesso!",
-          description: result.message,
-          variant: "default",
-        })
+        // toast({
+        //   title: "Sucesso!",
+        //   description: result.message,
+        // })
       }
     } else {
-      toast({
-        title: "Erro na Exportação",
-        description: result.message || "Não foi possível exportar o histórico da tarefa.",
-        variant: "destructive",
-      })
+      // toast({
+      //   title: "Erro na Exportação",
+      //   description: result.message || "Não foi possível exportar o histórico da tarefa.",
+      //   variant: "destructive",
+      // })
     }
     setIsExporting(false)
   }
@@ -95,7 +94,7 @@ export function HistoryModal({ isOpen, onClose, taskId, taskName }: HistoryModal
               {history.map((entry, index) => (
                 <div key={entry.id} className="mb-4">
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold">Executado em: {formatDate(entry.executed_at)}</span>
+                    <span className="font-semibold">Executado em: {formatDate(entry.executed_at || null)}</span>
                     <span className="text-sm text-muted-foreground">Por: {entry.executed_by || "N/A"}</span>
                   </div>
                   {entry.observation && (

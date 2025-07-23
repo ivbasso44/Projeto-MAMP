@@ -68,7 +68,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   // Calcular tarefas por posto de trabalho (baseado em instâncias)
   const tasksByWorkStation: { [station: string]: number } = {}
   instances.forEach((instance) => {
-    instance.work_stations.forEach((station) => {
+    instance.work_stations.forEach((station: string) => {
       const normalizedStation = station.trim().toLowerCase() // Normaliza para contagem
       tasksByWorkStation[normalizedStation] = (tasksByWorkStation[normalizedStation] || 0) + 1
     })

@@ -1,9 +1,5 @@
 "use client"
 
-import { CommandEmpty } from "@/components/ui/command"
-
-import { CommandGroup } from "@/components/ui/command"
-
 import { useState } from "react"
 import {
   Dialog,
@@ -12,19 +8,20 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Command, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { Checkbox } from "@/components/ui/checkbox"
-import { createTask } from "@/actions/tasks"
-import { TASK_NAME_OPTIONS, WORK_STATION_OPTIONS } from "@/lib/constants"
+} from "../components/ui/dialog"
+import { Button } from "../components/ui/button"
+// import { Input } from "@/components/ui/input"
+import { Input } from "../components/ui/input"
+import { Label } from "../components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
+import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../components/ui/command"
+import { Checkbox } from "../components/ui/checkbox"
+import { createTask } from "../actions/tasks"
+import { TASK_NAME_OPTIONS, WORK_STATION_OPTIONS } from "../lib/constants"
 import { ChevronsUpDown } from "lucide-react"
-import type { TaskWithDefinition } from "@/types/supabase" // Alterado para TaskWithDefinition
-import { useToast } from "@/hooks/use-toast"
+import type { TaskWithDefinition } from "../types/supabase" // Corrigido o caminho do import
+import { useToast } from "../hooks/use-toast"
 
 interface CreateTaskDialogProps {
   isOpen: boolean
@@ -59,11 +56,11 @@ export function CreateTaskDialog({ isOpen, onClose, onTaskCreated }: CreateTaskD
 
     if (result.success && result.newInstance) {
       onTaskCreated(result.newInstance)
-      toast({
-        title: "Sucesso!",
-        description: result.toastMessage,
-        variant: "default",
-      })
+      // toast({
+      //   title: "Sucesso!",
+      //   description: result.toastMessage,
+      // })
+      console.log("Sucesso:", result.toastMessage)
       // Reset form
       setTaskName("")
       setSelectedWorkStations([])
@@ -71,11 +68,12 @@ export function CreateTaskDialog({ isOpen, onClose, onTaskCreated }: CreateTaskD
       onClose()
     } else {
       setError(result.message || "Erro desconhecido ao criar a tarefa.")
-      toast({
-        title: "Erro",
-        description: result.toastMessage || "Não foi possível criar a tarefa.",
-        variant: "destructive",
-      })
+      // toast({
+      //   title: "Erro",
+      //   description: result.toastMessage || "Não foi possível criar a tarefa.",
+      //   variant: "destructive",
+      // })
+      console.log("Erro:", result.toastMessage || "Não foi possível criar a tarefa.")
     }
     setIsLoading(false)
   }

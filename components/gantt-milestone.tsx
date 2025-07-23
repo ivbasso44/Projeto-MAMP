@@ -2,10 +2,10 @@
 
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { cn } from "@/lib/utils"
-import { getTaskStatus } from "@/lib/utils"
-import type { TaskInstance } from "@/types/supabase"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../components/ui/tooltip"
+import { cn } from "../lib/utils"
+import { getTaskStatus } from "../lib/utils"
+import type { TaskInstance } from "../types/supabase"
 
 interface GanttMilestoneProps {
   type: "last_executed" | "next_due"
@@ -24,7 +24,7 @@ export function GanttMilestone({ type, taskName, instance }: GanttMilestoneProps
     displayDate = instance.last_executed_at ? new Date(instance.last_executed_at) : null
   } else {
     // type === "next_due"
-    const status = getTaskStatus(instance.next_due_at)
+    const status = getTaskStatus(instance.next_due_at || null)
     switch (status) {
       case "overdue":
         colorClass = "bg-destructive"
@@ -61,9 +61,9 @@ export function GanttMilestone({ type, taskName, instance }: GanttMilestoneProps
           {type === "next_due" && (
             <p>
               Status:{" "}
-              {getTaskStatus(instance.next_due_at) === "overdue"
+              {getTaskStatus(instance.next_due_at || null) === "overdue"
                 ? "Atrasada"
-                : getTaskStatus(instance.next_due_at) === "upcoming"
+                : getTaskStatus(instance.next_due_at || null) === "upcoming"
                   ? "Próxima"
                   : "Em Dia"}
             </p>

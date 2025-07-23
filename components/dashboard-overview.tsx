@@ -2,15 +2,16 @@
 
 import type React from "react"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress" // Usaremos para barras de progresso simples
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
-import { formatDate } from "@/lib/utils"
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
+// import { Badge } from "@/components/ui/badge"
+import { Badge } from "../components/ui/badge"
+import { Progress } from "../components/ui/progress" // Usaremos para barras de progresso simples
+import { ScrollArea } from "../components/ui/scroll-area"
+import { Separator } from "../components/ui/separator"
+import { formatDate } from "../lib/utils"
 import { useEffect, useState } from "react"
-import { getDashboardSummary } from "@/actions/dashboard"
-import type { TaskHistory } from "@/types/supabase"
+import { getDashboardSummary } from "../actions/dashboard"
+import type { TaskHistory } from "../types/supabase"
 
 interface DashboardSummaryProps {
   initialSummary: {
@@ -72,9 +73,9 @@ export function DashboardOverview({ initialSummary }: DashboardSummaryProps) {
 
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Próximas (7 dias)</span>
-              <Badge variant="warning">{tasksByStatus.upcoming}</Badge>
+              <Badge variant="secondary">{tasksByStatus.upcoming}</Badge>
             </div>
-            <Progress value={getStatusPercentage("upcoming")} className="h-2" variant="warning" />
+            <Progress value={getStatusPercentage("upcoming")} className="h-2" />
 
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Em Dia</span>
@@ -127,7 +128,7 @@ export function DashboardOverview({ initialSummary }: DashboardSummaryProps) {
                       Tarefa: <span className="text-primary">{entry.task_id?.substring(0, 8)}...</span>
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Executado em: {formatDate(entry.executed_at)} por {entry.executed_by || "N/A"}
+                      Executado em: {entry.executed_at ? formatDate(entry.executed_at) : "N/A"} por {entry.executed_by || "N/A"}
                     </p>
                     {entry.observation && (
                       <p className="text-xs text-muted-foreground italic">Obs: {entry.observation}</p>

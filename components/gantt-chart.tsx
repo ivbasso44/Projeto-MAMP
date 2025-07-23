@@ -1,12 +1,12 @@
 "use client"
 import { useMemo, useRef, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import type { AggregatedTaskDisplay } from "@/types/supabase"
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
+import type { AggregatedTaskDisplay } from "../types/supabase"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { cn } from "@/lib/utils"
+import { cn } from "../lib/utils"
 import { GanttMilestone } from "./gantt-milestone"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../components/ui/tooltip"
 
 interface GanttChartProps {
   tasks: AggregatedTaskDisplay[]
@@ -120,12 +120,12 @@ export function GanttChart({ tasks }: GanttChartProps) {
                       : null
                     const nextDueDay = instance.next_due_at ? new Date(instance.next_due_at).toDateString() : null
 
-                    const m = []
+                    const m: Array<{ type: "last_executed" | "next_due"; instance: any }> = []
                     if (lastExecutedDay === currentDay) {
-                      m.push({ type: "last_executed", instance: instance })
+                      m.push({ type: "last_executed" as const, instance: instance })
                     }
                     if (nextDueDay === currentDay) {
-                      m.push({ type: "next_due", instance: instance })
+                      m.push({ type: "next_due" as const, instance: instance })
                     }
                     return m
                   })

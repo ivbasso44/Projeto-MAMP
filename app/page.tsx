@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TaskCalendar } from "@/components/task-calendar"
 import { GanttChart } from "@/components/gantt-chart"
-import type { TaskInstance, TaskWithDefinition, AggregatedTaskDisplay } from "@/types/supabase" // Importe os novos tipos
+import type { TaskInstance, TaskWithDefinition } from "@/types/supabase" // Importe os novos tipos
+import type { AggregatedTaskDisplay } from "@/types/supabase"
 
 export const dynamic = "force-dynamic" // Garante que os dados sejam sempre frescos
 
@@ -12,18 +13,31 @@ export const dynamic = "force-dynamic" // Garante que os dados sejam sempre fres
 function aggregateTasksForDisplay(tasksWithDefinition: TaskWithDefinition[]): AggregatedTaskDisplay[] {
   const groupedTasks = new Map<string, AggregatedTaskDisplay>()
 
+  if (!tasksWithDefinition || tasksWithDefinition.length === 0) {
+    return []
+  }
+
   tasksWithDefinition.forEach((task) => {
     if (!groupedTasks.has(task.name)) {
       // Se é a primeira vez que vemos este nome de tarefa, inicialize
       groupedTasks.set(task.name, {
         id: task.id, // Usamos o ID da primeira instância como ID representativo
-        task_definition_id: task.task_definition_id,
+        task_definition_id: task.task_definition_id, // Adiciona o campo obrigatório
         name: task.name,
         work_stations: [...task.work_stations], // Copia os postos de trabalho
         frequency_days: task.frequency_days, // Usa a frequência da primeira instância
         last_executed_at: task.last_executed_at,
-        next_due_at: task.next_due_at,
+        next_due_at: task.next_due_at ? task.next_due_at : undefined, // Garante string ou undefined
+        instances: [task], // Adiciona a propriedade instances
         originalInstances: [task], // Armazena a instância original
+        // Adicione os campos esperados pelo TaskTable
+        status: "pending", // ou lógica para determinar status
+        title: task.name, // ou outro campo apropriado
+        description: task.description !== undefined ? task.description : "", // garante string
+        created_at: task.created_at ? new Date(task.created_at) : undefined,
+        updated_at: task.updated_at ? new Date(task.updated_at) : undefined,
+        project_id: task.project_id ?? undefined,
+        project_name: "Projeto Geral", // Adiciona o nome do projeto
       })
     } else {
       // Se o nome da tarefa já existe, atualize os dados agregados
@@ -42,7 +56,6 @@ function aggregateTasksForDisplay(tasksWithDefinition: TaskWithDefinition[]): Ag
           existing.last_executed_at = task.last_executed_at
         }
       }
-
       // Atualiza a próxima execução (pega a mais antiga/próxima a vencer)
       if (task.next_due_at) {
         if (!existing.next_due_at || new Date(task.next_due_at) < new Date(existing.next_due_at)) {
@@ -50,10 +63,16 @@ function aggregateTasksForDisplay(tasksWithDefinition: TaskWithDefinition[]): Ag
           // Se a próxima execução mais antiga for desta tarefa, use o ID e a frequência dela como representativos
           existing.id = task.id
           existing.frequency_days = task.frequency_days
+          existing.task_definition_id = task.task_definition_id
         }
       }
 
       existing.originalInstances.push(task) // Adiciona a instância original à lista
+
+      // Garante que description nunca seja undefined
+      if (existing.description === undefined) {
+        existing.description = ""
+      }
     }
   })
 
@@ -64,6 +83,8 @@ function aggregateTasksForDisplay(tasksWithDefinition: TaskWithDefinition[]): Ag
     if (!b.next_due_at) return -1
     return new Date(a.next_due_at).getTime() - new Date(b.next_due_at).getTime()
   })
+  // Garantia de retorno mesmo se o código acima não for executado (por segurança)
+  // return []
 }
 
 export default async function Home() {

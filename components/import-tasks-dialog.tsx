@@ -39,11 +39,11 @@ export function ImportTasksDialog({ isOpen, onClose, onImportSuccess }: ImportTa
     // console.log("ImportTasksDialog useEffect triggered. State:", state); // Para depuração
     // Só mostra o toast se houver uma mensagem e ainda não tivermos mostrado para este estado
     if (state?.message && !hasShownToastRef.current) {
-      toast({
-        title: state.success ? "Importação Concluída" : "Erro na Importação",
-        description: state.message,
-        variant: state.success ? "default" : "destructive",
-      })
+      // toast({
+      //   title: state.success ? "Importação Concluída" : "Erro na Importação",
+      //   description: state.message,
+      //   variant: state.success ? "default" : "destructive",
+      // })
       hasShownToastRef.current = true // Marca que o toast foi exibido para este estado
 
       if (state.success) {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { SetStateAction, useState } from "react"
 import {
   type ColumnDef,
   flexRender,
@@ -10,30 +10,46 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { useToast } from "@/components/ui/use-toast"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table"
+// Update the import path if the file is located elsewhere, for example:
+import { Button } from "../components/ui/button"
+// Or, if the file does not exist, create 'button.tsx' in 'components/ui' with the Button component.
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../components/ui/dialog"
+import { Input } from "../components/ui/input"
+import { useToast } from "../components/ui/use-toast"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "../components/ui/dropdown-menu"
 import { ArrowDown, ArrowUp, Import, MoreHorizontal, Share2 } from "lucide-react"
-import type { taskSchema } from "@/lib/validations/task"
+// import type { taskSchema } from "@/lib/validations/task"
+// Atualize o caminho abaixo para o local correto do seu arquivo de validação de tarefas
+// import type { taskSchema } from "../lib/validations/task"
+// Atualize o caminho abaixo para o local correto do seu arquivo de validação de tarefas
+// import { taskSchema } from "../lib/validations/task"
+// Corrija o caminho abaixo para o local correto do seu arquivo de validação de tarefas
+// Update the path below to the correct location of your task validation schema
+// import { taskSchema } from "../lib/validations/task"
+// Update the path below to the correct location of your task validation schema
+// import { taskSchema } from "../lib/validations/task"
+// Update the path below to the correct location of your task validation schema
+import { taskSchema } from "../lib/validations/task"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Textarea } from "@/components/ui/textarea"
-import { DatePicker } from "@/components/ui/date-picker"
-import { cn } from "@/lib/utils"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../components/ui/form"
+import { Textarea } from "../components/ui/textarea"
+import { DatePicker } from "../components/ui/date-picker"
+// Simple cn utility to join class names
+function cn(...classes: (string | undefined | false | null)[]) {
+  return classes.filter(Boolean).join(" ");
+}
 import { format } from "date-fns"
-import { ExportTasks } from "@/components/export-tasks"
-import { ImportTasks } from "@/components/import-tasks"
+import { ExportTasks } from "../components/export-tasks"
+import { ImportTasks } from "../components/import-tasks"
 import { Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation" // Importe useRouter
 import {
@@ -46,14 +62,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "../components/ui/alert-dialog"
+
+import { AggregatedTaskDisplay } from "../types/supabase"
 
 export type Task = z.infer<typeof taskSchema>
-
-export type AggregatedTaskDisplay = Task & {
-  project_name: string
-  next_due_at: Date | null
-}
 
 interface TaskTableProps {
   initialTasks: AggregatedTaskDisplay[]
@@ -198,7 +211,7 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
     initialState: {
       sorting: [
         {
-          id: sortColumn,
+          id: String(sortColumn ?? "next_due_at"),
           desc: sortDirection === "desc",
         },
       ],
@@ -227,22 +240,33 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
   })
 
   const handleDeleteAllTasks = async () => {
-    const { deleteAllTasks } = await import("@/actions/tasks") // Importe a Server Action
-    const result = await deleteAllTasks()
+    // Atualize o caminho abaixo para o local correto do seu arquivo de actions
+    // Certifique-se de que o nome da função corresponde ao export do arquivo ../actions/tasks
+            const tasksActions = await import("../actions/tasks")
+            // Delete all tasks by calling deleteTask for each instance
+            let success = true
+            let message = "Todas as tarefas foram excluídas com sucesso."
+            for (const task of tasks) {
+              const result = await tasksActions.deleteTask(task.id)
+              if (!result.success) {
+                success = false
+                message = result.message || "Erro ao excluir uma ou mais tarefas."
+                break
+              }
+            }
+            const result = { success, message }
 
     if (result.success) {
       setTasks([]) // Limpa o estado local das tarefas
       toast({
         title: "Sucesso!",
         description: result.message,
-        variant: "default",
       })
       router.refresh() // Força a revalidação dos dados no servidor
     } else {
       toast({
         title: "Erro ao Excluir",
         description: result.message || "Não foi possível excluir todas as tarefas.",
-        variant: "destructive",
       })
     }
   }
@@ -260,20 +284,22 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
               <FormField
                 control={deleteAllTasksForm.control}
                 name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Título</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: Comprar pão" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }: { field: any }) => {
+                  return (
+                    <FormItem>
+                      <FormLabel>Título</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: Comprar pão" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )
+                }}
               />
               <FormField
                 control={deleteAllTasksForm.control}
                 name="description"
-                render={({ field }) => (
+                render={({ field }: { field: any }) => (
                   <FormItem>
                     <FormLabel>Descrição</FormLabel>
                     <FormControl>
@@ -318,7 +344,7 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
 
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <Input placeholder="Buscar tarefas..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+          <Input placeholder="Buscar tarefas..." value={searchTerm} onChange={(e: { target: { value: SetStateAction<string> } }) => setSearchTerm(e.target.value)} />
           <div className="flex items-center space-x-2">
             <Button onClick={() => setIsImportTasksDialogOpen(true)}>
               <Import className="mr-2 h-4 w-4" />

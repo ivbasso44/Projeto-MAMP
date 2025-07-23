@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
-import { Calendar } from "@/components/ui/calendar"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { formatDate } from "@/lib/utils"
-import type { TaskInstance } from "@/types/supabase" // Alterado para TaskInstance
-import { createServerClient } from "@/lib/supabase" // Importar para buscar nomes
+import { useState, useEffect } from "react"
+import { Calendar } from "../components/ui/calendar"
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
+import { formatDate } from "../lib/utils"
+import type { TaskInstance } from "../types/supabase" // Alterado para TaskInstance
+import { createServerClient } from "../lib/supabase" // Importar para buscar nomes
 
 interface TaskCalendarProps {
   tasks: TaskInstance[] // Agora recebe TaskInstance[]
@@ -20,7 +20,7 @@ export function TaskCalendar({ tasks }: TaskCalendarProps) {
   // Isso é um hack para o cliente, idealmente o nome viria junto com a TaskInstance
   // ou seria passado de forma mais eficiente.
   // Para este caso, como o calendário só precisa do nome para exibição, faremos uma busca leve.
-  useState(() => {
+  useEffect(() => {
     // Changed from useEffect to useState for immediate execution on mount
     const fetchNames = async () => {
       const supabase = createServerClient() // Cliente do lado do servidor, mas usado aqui para buscar dados
@@ -91,7 +91,6 @@ export function TaskCalendar({ tasks }: TaskCalendarProps) {
             onSelect={setSelectedDate}
             modifiers={modifiers}
             modifiersStyles={modifiersStyles}
-            classNames={classNames}
             className="rounded-md border"
             fixedWeeks={true} // Adicionado para manter o tamanho fixo
           />

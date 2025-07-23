@@ -1,18 +1,22 @@
 "use client"
 
 import { useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+// Update the import path if the Button component is located elsewhere, for example:
+import { Button } from "../components/ui/button"
+// Or, if the correct path is different, adjust accordingly:
+// import { Button } from "./ui/button"
+import { Input } from "../components/ui/input"
+import { Label } from "../components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
 import Link from "next/link"
 import { useActionState } from "react"
-import { useToast } from "@/hooks/use-toast" // Importe useToast
+// Update the import path below to the correct relative path for use-toast
+import { useToast } from "../hooks/use-toast"
 import { useRouter } from "next/navigation" // Importe useRouter
 
 interface AuthFormProps {
   type: "sign-in" | "sign-up"
-  action: (formData: FormData) => Promise<{ success: boolean; message: string; redirectTo?: string }>
+  action: (previousState: any, formData: FormData) => Promise<{ success: boolean; message: string; redirectTo?: string }>
 }
 
 export function AuthForm({ type, action }: AuthFormProps) {
@@ -32,17 +36,20 @@ export function AuthForm({ type, action }: AuthFormProps) {
         toast({
           title: "Sucesso!",
           description: state.message,
-          variant: "default",
-        })
+          // Adicione outros campos opcionais se necessário
+        } as any)
+        if (state.redirectTo) {
+          router.push(state.redirectTo)
+        }
       } else {
         toast({
           title: "Erro",
           description: state.message,
-          variant: "destructive",
-        })
+          // Adicione outros campos opcionais se necessário
+        } as any)
       }
     }
-  }, [state, toast])
+  }, [state, toast, router])
 
   return (
     <Card className="w-full max-w-md">
