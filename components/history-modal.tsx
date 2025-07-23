@@ -8,15 +8,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog" // Importe DialogFooter
-import { Button } from "@/components/ui/button" // Importe Button
-import { getTaskHistory, exportTaskHistoryToXlsx } from "@/actions/tasks" // Importe a nova action
-import type { TaskHistory } from "@/types/supabase"
-import { formatDate, base64ToArrayBuffer } from "@/lib/utils" // Importe base64ToArrayBuffer
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
+} from "../components/ui/dialog" // Importe DialogFooter
+import { Button } from "../components/ui/button" // Importe Button
+import { getTaskHistory, exportTaskHistoryToXlsx } from "../actions/tasks" // Importe a nova action
+import type { TaskHistory } from "../types/supabase"
+import { formatDate, base64ToArrayBuffer } from "../lib/utils" // Importe base64ToArrayBuffer
+import { ScrollArea } from "../components/ui/scroll-area"
+import { Separator } from "../components/ui/separator"
 import { Download } from "lucide-react" // Importe o ícone Download
-import { useToast } from "@/hooks/use-toast" // Importe o hook useToast
+import { useToast } from "../hooks/use-toast" // Importe o hook useToast
 
 interface HistoryModalProps {
   isOpen: boolean
