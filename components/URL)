@@ -1,0 +1,37 @@
+// This is not code, but instructions for configuring Resend and Supabase.
+// There is no code to generate. The instructions are:
+
+// 1. Crie uma conta no Resend:
+//    * Acesse https://resend.com/ e crie uma conta.
+//    * Adicione e verifique seu domínio de envio (ex: seu-dominio.com ou um subdomínio como emails.seu-dominio.com). Siga as instruções do Resend para adicionar os registros DNS (TXT, CNAME) no seu provedor de domínio.
+//    * Crie uma nova API Key no Resend (em 'API Keys'). Guarde-a, pois você só a verá uma vez.
+
+// 2. Adicione a API Key do Resend como variável de ambiente na Vercel:
+//    * Vá para o seu projeto na Vercel.
+//    * Vá em 'Settings' > 'Environment Variables'.
+//    * Adicione uma nova variável:
+//      * Name: `RESEND_API_KEY`
+//      * Value: Sua API Key do Resend (ex: `re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`)
+//      * Environments: Marque 'All Environments' (ou 'Production' e 'Preview' se preferir).
+//    * Salve as alterações.
+
+// 3. Configure o Supabase para usar o Resend como SMTP:
+//    * Vá para o seu dashboard do Supabase.
+//    * Navegue até 'Authentication' > 'Settings'.
+//    * Role para baixo até a seção 'SMTP Settings'.
+//    * Habilite 'Enable Custom SMTP'.
+//    * Preencha os campos com as informações do Resend:
+//      * SMTP Host: `smtp.resend.com`
+//      * SMTP Port: `587` (ou `465` para SSL/TLS)
+//      * SMTP User: `resend` (este é o nome de usuário padrão para Resend)
+//      * SMTP Pass: Sua API Key do Resend (a mesma que você adicionou na Vercel)
+//      * Sender Email Address: O endereço de e-mail que você verificou no Resend e que será o remetente dos e-mails (ex: `no-reply@seu-dominio.com`).
+//    * Clique em 'Save' ou 'Save changes'.
+
+// 4. Teste o envio de e-mail no Supabase:
+//    * Na mesma página de 'SMTP Settings' no Supabase, você deve ver uma opção para 'Test email sending'.
+//    * Insira um endereço de e-mail para teste e clique em 'Send test email'.
+//    * Verifique a caixa de entrada (e spam) do e-mail de teste.
+
+// 5. Re-deploy do seu aplicativo na Vercel:
+//    * Após adicionar a variável de ambiente na Vercel, faça um novo deploy do seu projeto para que a nova variável seja reconhecida.
