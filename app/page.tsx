@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TaskCalendar } from "@/components/task-calendar"
 import { GanttChart } from "@/components/gantt-chart"
-import type { TaskInstance, TaskWithDefinition } from "@/types/supabase" // Importe os novos tipos
+import type { TaskInstance, TaskWithDefinition } from "@/types/supabase"
 import type { AggregatedTaskDisplay } from "@/types/supabase"
 
 export const dynamic = "force-dynamic" // Garante que os dados sejam sempre frescos
@@ -50,83 +50,93 @@ function aggregateTasksForDisplay(tasksWithDefinition: TaskWithDefinition[]): Ag
         }
       })
 
-      // Atualiza a última execução (pega a mais recente)
-      if (task.last_executed_at) {
-        if (!existing.last_executed_at || new Date(task.last_executed_at) > new Date(existing.last_executed_at)) {
-          existing.last_executed_at = task.last_executed_at
-        }
-      }
-      // Atualiza a próxima execução (pega a mais antiga/próxima a vencer)
-      if (task.next_due_at) {
-        if (!existing.next_due_at || new Date(task.next_due_at) < new Date(existing.next_due_at)) {
-          existing.next_due_at = task.next_due_at
-          // Se a próxima execução mais antiga for desta tarefa, use o ID e a frequência dela como representativos
-          existing.id = task.id
-          existing.frequency_days = task.frequency_days
-          existing.task_definition_id = task.task_definition_id
-        }
+      // Adiciona a instância
+      existing.instances.push(task)
+      existing.originalInstances.push(task)
+
+      // Atualiza para a próxima data de vencimento mais recente
+      if (!existing.next_due_at || (task.next_due_at && task.next_due_at < existing.next_due_at)) {
+        existing.next_due_at = task.next_due_at
       }
 
-      existing.originalInstances.push(task) // Adiciona a instância original à lista
-
-      // Garante que description nunca seja undefined
-      if (existing.description === undefined) {
-        existing.description = ""
+      // Atualiza para a última execução mais recente
+      if (!existing.last_executed_at || (task.last_executed_at && task.last_executed_at > existing.last_executed_at)) {
+        existing.last_executed_at = task.last_executed_at
       }
     }
   })
 
-  // Converte o Map de volta para um array e ordena pela próxima data de vencimento
-  return Array.from(groupedTasks.values()).sort((a, b) => {
-    if (!a.next_due_at && !b.next_due_at) return 0
-    if (!a.next_due_at) return 1
-    if (!b.next_due_at) return -1
-    return new Date(a.next_due_at).getTime() - new Date(b.next_due_at).getTime()
-  })
-  // Garantia de retorno mesmo se o código acima não for executado (por segurança)
-  // return []
+  return Array.from(groupedTasks.values())
 }
 
-export default async function Home() {
-  const tasksWithDefinition = await getTasks() // Agora retorna TaskWithDefinition[]
-  const aggregatedTasks = aggregateTasksForDisplay(tasksWithDefinition)
-
-  // Para o calendário, passamos as instâncias originais (TaskInstance)
-  // para que ele possa marcar todos os pontos de vencimento individuais.
-  // Precisamos extrair as TaskInstances de TaskWithDefinition.
-  const allTaskInstances: TaskInstance[] = tasksWithDefinition.map((task) => {
-    const { name, ...instance } = task // Remove 'name' para obter TaskInstance
-    return instance
-  })
+export default async function HomePage() {
+  let initialTasks: AggregatedTaskDisplay[] = []
+  
+  try {
+    const tasksWithDefinition = await getTasks()
+    initialTasks = aggregateTasksForDisplay(tasksWithDefinition)
+  } catch (error) {
+    console.error("Error loading tasks:", error)
+    // Continue com array vazio se houver erro
+  }
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gray-100 dark:bg-gray-950">
-      <Card className="w-full max-w-screen-2xl mx-auto my-8 px-4 py-8">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-3xl font-bold text-center">MEIOS AUXILIARES E MEDIÇÃO PARA PRODUÇÃO</CardTitle>
-          <CardDescription className="text-center">
-            Gerenciamento de tarefas de manutenção com histórico, agendamento e visualização em calendário.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="table" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="table">Lista de Tarefas</TabsTrigger>
-              <TabsTrigger value="calendar">Calendário de Prazos</TabsTrigger>
-              <TabsTrigger value="gantt">Gráfico de Gantt</TabsTrigger>
-            </TabsList>
-            <TabsContent value="table" className="mt-4">
-              <TaskTable initialTasks={aggregatedTasks} /> {/* Passa as tarefas agregadas */}
-            </TabsContent>
-            <TabsContent value="calendar" className="mt-4">
-              <TaskCalendar tasks={allTaskInstances} /> {/* O calendário agora usa as instâncias originais */}
-            </TabsContent>
-            <TabsContent value="gantt" className="mt-4">
-              <GanttChart tasks={aggregatedTasks} /> {/* Passa as tarefas agregadas */}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+    <div className="container mx-auto p-6">
+      <h1 className="mb-6 text-3xl font-bold">Sistema de Gestão de Tarefas</h1>
+      
+      {/* Mostra uma mensagem se não há tarefas */}
+      {initialTasks.length === 0 && (
+        <div className="mb-6 rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
+          <h2 className="text-xl font-semibold text-gray-600 mb-2">Bem-vindo ao Sistema de Tarefas!</h2>
+          <p className="text-gray-500">
+            Você pode começar criando uma nova tarefa ou importando dados existentes.
+          </p>
+        </div>
+      )}
+
+      <Tabs defaultValue="table" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="table">Tabela</TabsTrigger>
+          <TabsTrigger value="calendar">Calendário</TabsTrigger>
+          <TabsTrigger value="gantt">Gantt</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="table" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Lista de Tarefas</CardTitle>
+              <CardDescription>Gerencie suas tarefas e acompanhe o progresso</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TaskTable initialTasks={initialTasks} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="calendar" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Calendário de Tarefas</CardTitle>
+              <CardDescription>Visualize suas tarefas em formato de calendário</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TaskCalendar tasks={initialTasks} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="gantt" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gráfico de Gantt</CardTitle>
+              <CardDescription>Visualize o cronograma das tarefas</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <GanttChart tasks={initialTasks} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

@@ -7,23 +7,35 @@ import type { TaskInstance, TaskHistory, TaskDefinition, TaskWithDefinition } fr
 import ExcelJS from "exceljs"
 
 export async function getTasks(): Promise<TaskWithDefinition[]> {
-  const supabase = createServerClient()
-  // Busca todas as instâncias e faz um JOIN com as definições para obter o nome
-  const { data, error } = await supabase
-    .from("task_instances")
-    .select("*, task_definitions(name)") // Seleciona tudo de instances e o nome da definição
-    .order("next_due_at", { ascending: true })
+  try {
+    const supabase = createServerClient()
+    
+    // Primeiro, verifica se as tabelas existem fazendo uma query simples
+    const { data, error } = await supabase
+      .from("task_instances")
+      .select("*, task_definitions(name)")
+      .order("next_due_at", { ascending: true })
 
-  if (error) {
-    console.error("Error fetching tasks:", error)
+    if (error) {
+      console.error("Error fetching tasks:", error)
+      // Retorna array vazio em caso de erro para não quebrar a aplicação
+      return []
+    }
+
+    if (!data || data.length === 0) {
+      console.log("No tasks found in database")
+      return []
+    }
+
+    // Mapeia os dados para o tipo TaskWithDefinition
+    return data.map((item) => ({
+      ...item,
+      name: (item.task_definitions as { name: string })?.name || "Nome não encontrado",
+    }))
+  } catch (error) {
+    console.error("Unexpected error in getTasks:", error)
     return []
   }
-
-  // Mapeia os dados para o tipo TaskWithDefinition
-  return data.map((item) => ({
-    ...item,
-    name: (item.task_definitions as { name: string }).name, // Extrai o nome da definição
-  }))
 }
 
 export async function markTaskAsDone(

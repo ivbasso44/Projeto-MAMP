@@ -1,118 +1,130 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Calendar } from "../components/ui/calendar"
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { formatDate } from "../lib/utils"
-import type { TaskInstance } from "../types/supabase" // Alterado para TaskInstance
-import { createServerClient } from "../lib/supabase" // Importar para buscar nomes
+import type { AggregatedTaskDisplay } from "../types/supabase"
 
 interface TaskCalendarProps {
-  tasks: TaskInstance[] // Agora recebe TaskInstance[]
+  tasks: AggregatedTaskDisplay[]
 }
 
 export function TaskCalendar({ tasks }: TaskCalendarProps) {
   const [month, setMonth] = useState<Date>(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
-  const [taskNamesMap, setTaskNamesMap] = useState<Map<string, string>>(new Map()) // Para armazenar nomes de tarefas
 
-  // Efeito para buscar os nomes das tarefas quando as tasks mudam
-  // Isso é um hack para o cliente, idealmente o nome viria junto com a TaskInstance
-  // ou seria passado de forma mais eficiente.
-  // Para este caso, como o calendário só precisa do nome para exibição, faremos uma busca leve.
-  useEffect(() => {
-    // Changed from useEffect to useState for immediate execution on mount
-    const fetchNames = async () => {
-      const supabase = createServerClient() // Cliente do lado do servidor, mas usado aqui para buscar dados
-      const definitionIds = Array.from(new Set(tasks.map((t) => t.task_definition_id)))
-      if (definitionIds.length === 0) return
-
-      const { data, error } = await supabase.from("task_definitions").select("id, name").in("id", definitionIds)
-
-      if (error) {
-        console.error("Error fetching task definitions for calendar:", error)
-        return
-      }
-
-      const newMap = new Map<string, string>()
-      data.forEach((def) => newMap.set(def.id, def.name))
-      setTaskNamesMap(newMap)
-    }
-    fetchNames()
-  }, [tasks])
-
-  // Mapeia as datas de vencimento para o calendário
-  const modifiers = {
-    taskDue: tasks
-      .filter((task) => task.next_due_at)
-      .map((task) => {
-        const date = new Date(task.next_due_at!)
-        date.setHours(0, 0, 0, 0) // Zera a hora para comparação
-        return date
-      }),
+  // Função para obter tarefas de uma data específica
+  const getTasksForDate = (date: Date) => {
+    return tasks.filter((task) => {
+      if (!task.next_due_at) return false
+      const taskDate = new Date(task.next_due_at)
+      return (
+        taskDate.getDate() === date.getDate() &&
+        taskDate.getMonth() === date.getMonth() &&
+        taskDate.getFullYear() === date.getFullYear()
+      )
+    })
   }
 
-  // Reintroduzindo modifiersStyles para o destaque visual do dia
-  const modifiersStyles = {
-    taskDue: {
-      // Usando cores do tema shadcn/ui para consistência
-      backgroundColor: "hsl(var(--primary))",
-      color: "hsl(var(--primary-foreground))",
-      borderRadius: "0.25rem", // rounded-md
-    },
+  // Função para verificar se uma data tem tarefas
+  const hasTasksForDate = (date: Date) => {
+    return getTasksForDate(date).length > 0
   }
 
-  // Mantendo classNames para o ponto adicional, se desejar
-  const classNames = {
-    day_taskDue: "rdp-day_task-due", // Nome da classe CSS para dias com tarefas (para o ponto)
-  }
-
-  const tasksForSelectedDate = selectedDate
-    ? tasks.filter((task) => {
-        if (!task.next_due_at) return false
-        const taskDate = new Date(task.next_due_at)
-        taskDate.setHours(0, 0, 0, 0)
-        return taskDate.getTime() === selectedDate.getTime()
-      })
-    : []
+  // Tarefas para a data selecionada
+  const selectedDateTasks = selectedDate ? getTasksForDate(selectedDate) : []
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Próximas Execuções no Calendário</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col md:flex-row gap-6">
-        <div className="flex-shrink-0">
-          <Calendar
-            mode="single"
-            month={month}
-            onMonthChange={setMonth}
-            selected={selectedDate}
-            onSelect={setSelectedDate}
-            modifiers={modifiers}
-            modifiersStyles={modifiersStyles}
-            className="rounded-md border"
-            fixedWeeks={true} // Adicionado para manter o tamanho fixo
-          />
-        </div>
-        <div className="flex-grow">
-          <h3 className="text-lg font-semibold mb-2">
-            Tarefas para {selectedDate ? formatDate(selectedDate.toISOString()) : "a data selecionada"}
-          </h3>
-          {tasksForSelectedDate.length > 0 ? (
-            <ul className="space-y-2">
-              {tasksForSelectedDate.map((task) => (
-                <li key={task.id} className="border-b pb-2 last:border-b-0 last:pb-0">
-                  <p className="font-medium">{taskNamesMap.get(task.task_definition_id) || "Nome Desconhecido"}</p>
-                  <p className="text-sm text-muted-foreground">Postos: {task.work_stations.join(", ")}</p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-muted-foreground">Nenhuma tarefa agendada para esta data.</p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex flex-col space-y-4 md:flex-row md:space-x-4 md:space-y-0">
+      <div className="flex-1">
+        <Calendar
+          mode="single"
+          selected={selectedDate}
+          onSelect={setSelectedDate}
+          month={month}
+          onMonthChange={setMonth}
+          className="rounded-md border"
+          modifiers={{
+            hasTasks: (date) => hasTasksForDate(date),
+          }}
+          modifiersStyles={{
+            hasTasks: {
+              backgroundColor: "hsl(var(--primary))",
+              color: "hsl(var(--primary-foreground))",
+              fontWeight: "bold",
+            },
+          }}
+        />
+      </div>
+
+      <div className="flex-1">
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {selectedDate ? `Tarefas para ${selectedDate.toLocaleDateString('pt-BR')}` : "Selecione uma data"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {selectedDate ? (
+              selectedDateTasks.length > 0 ? (
+                <div className="space-y-3">
+                  {selectedDateTasks.map((task) => (
+                    <div key={task.id} className="rounded-lg border p-3">
+                      <p className="font-medium">{task.title || task.name}</p>
+                      <p className="text-sm text-muted-foreground">{task.description}</p>
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {task.work_stations?.map((station, idx) => (
+                          <span
+                            key={idx}
+                            className="rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-800"
+                          >
+                            {station}
+                          </span>
+                        ))}
+                      </div>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        Frequência: {task.frequency_days} dias
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground">Nenhuma tarefa agendada para esta data.</p>
+              )
+            ) : (
+              <p className="text-muted-foreground">Selecione uma data para ver as tarefas agendadas.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Resumo do mês */}
+        <Card className="mt-4">
+          <CardHeader>
+            <CardTitle>Resumo do Mês</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <p className="text-sm">
+                <span className="font-medium">Total de tarefas:</span> {tasks.length}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">Tarefas este mês:</span>{" "}
+                {
+                  tasks.filter((task) => {
+                    if (!task.next_due_at) return false
+                    const taskDate = new Date(task.next_due_at)
+                    return (
+                      taskDate.getMonth() === month.getMonth() &&
+                      taskDate.getFullYear() === month.getFullYear()
+                    )
+                  }).length
+                }
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   )
 }
