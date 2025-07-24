@@ -66,6 +66,7 @@ import {
 
 import { AggregatedTaskDisplay } from "../types/supabase"
 import { createTask } from "../actions/tasks"
+import { CreateTaskDialog } from "./create-task-dialog"
 import { toast } from "sonner"
 
 export type Task = z.infer<typeof taskSchema>
@@ -82,6 +83,7 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
   const [sortColumn, setSortColumn] = useState<keyof AggregatedTaskDisplay | "status" | null>("next_due_at")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
   const [isExporting, setIsExporting] = useState(false)
+  const router = useRouter()
 
   const columns: ColumnDef<AggregatedTaskDisplay>[] = [
     {
@@ -298,84 +300,18 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
     }
   }
 
+  const handleTaskCreated = (newTask: any) => {
+    // Refresh the page to show the new task
+    router.refresh()
+  }
+
   return (
     <>
-      <Dialog open={isCreateTaskDialogOpen} onOpenChange={setIsCreateTaskDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Criar Nova Tarefa</DialogTitle>
-            <DialogDescription>Crie uma nova tarefa para sua lista de tarefas.</DialogDescription>
-          </DialogHeader>
-          <Form {...createTaskForm}>
-            <form onSubmit={createTaskForm.handleSubmit(handleCreateTask)} className="space-y-4">
-              <FormField
-                control={createTaskForm.control}
-                name="name"
-                render={({ field }: { field: any }) => {
-                  return (
-                    <FormItem>
-                      <FormLabel>Nome da Tarefa</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ex: Limpeza da máquina" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )
-                }}
-              />
-              <FormField
-                control={createTaskForm.control}
-                name="workStations"
-                render={({ field }: { field: any }) => (
-                  <FormItem>
-                    <FormLabel>Postos de Trabalho</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Ex: Posto 1, Posto 2 (separados por vírgula)" 
-                        onChange={(e) => {
-                          const value = e.target.value
-                          const stations = value.split(',').map(s => s.trim()).filter(s => s.length > 0)
-                          field.onChange(stations)
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={createTaskForm.control}
-                name="frequencyDays"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Frequência (dias)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number"
-                        min="1"
-                        placeholder="1"
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
-                        defaultValue={1}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex justify-end space-x-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsCreateTaskDialogOpen(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit">Criar Tarefa</Button>
-              </div>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+      <CreateTaskDialog 
+        isOpen={isCreateTaskDialogOpen}
+        onClose={() => setIsCreateTaskDialogOpen(false)}
+        onTaskCreated={handleTaskCreated}
+      />
 
       <Dialog open={isImportTasksDialogOpen} onOpenChange={setIsImportTasksDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
