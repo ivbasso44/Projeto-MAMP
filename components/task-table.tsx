@@ -250,39 +250,6 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
         onTaskCreated={handleTaskCreated}
       />
 
-      {/* TESTE: Botões simples para debug */}
-      <div style={{ padding: '20px', backgroundColor: '#f0f0f0', margin: '10px', borderRadius: '5px' }}>
-        <h3>TESTE DE BOTÕES:</h3>
-        <button 
-          onClick={() => {
-            console.log("TESTE: Botão HTML simples clicado!")
-            alert("Botão HTML simples funcionou!")
-          }}
-          style={{ 
-            padding: '8px 16px', 
-            backgroundColor: '#28a745', 
-            color: 'white', 
-            border: 'none', 
-            borderRadius: '4px',
-            margin: '5px',
-            cursor: 'pointer'
-          }}
-        >
-          TESTE: HTML Button
-        </button>
-        
-        <Button 
-          onClick={() => {
-            console.log("TESTE: Componente Button clicado!")
-            alert("Componente Button funcionou!")
-          }}
-          variant="default"
-          style={{ margin: '5px' }}
-        >
-          TESTE: Button Component
-        </Button>
-      </div>
-
       <Dialog open={isImportTasksDialogOpen} onOpenChange={setIsImportTasksDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>

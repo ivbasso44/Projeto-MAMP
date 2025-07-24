@@ -1,10 +1,10 @@
 import type React from "react"
 import type { Metadata } from "next"
 import "./globals.css"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { ThemeToggle } from "../components/theme-toggle"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Providers } from "@/components/providers" // Importe o novo componente Providers
+import { Button } from "../components/ui/button"
+import { Providers } from "../components/providers"
 
 export const metadata: Metadata = {
   title: "v0 App",

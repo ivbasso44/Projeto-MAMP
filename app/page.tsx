@@ -1,11 +1,11 @@
-import { getTasks } from "@/actions/tasks"
-import { TaskTable } from "@/components/task-table"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { TaskCalendar } from "@/components/task-calendar"
-import { GanttChart } from "@/components/gantt-chart"
-import type { TaskInstance, TaskWithDefinition } from "@/types/supabase"
-import type { AggregatedTaskDisplay } from "@/types/supabase"
+import { getTasks } from "../actions/tasks"
+import { TaskTable } from "../components/task-table"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
+import { TaskCalendar } from "../components/task-calendar"
+import { GanttChart } from "../components/gantt-chart"
+import type { TaskInstance, TaskWithDefinition } from "../types/supabase"
+import type { AggregatedTaskDisplay } from "../types/supabase"
 
 export const dynamic = "force-dynamic" // Garante que os dados sejam sempre frescos
 
