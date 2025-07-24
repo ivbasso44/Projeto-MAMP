@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
-import { CreateTaskDialog } from "./create-task-dialog"
+import { CreateTaskDialogTest } from "./create-task-dialog-test"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -107,11 +107,11 @@ export function TaskTableStep3() {
         </p>
       </div>
 
-      {/* CreateTaskDialog REAL */}
-      <CreateTaskDialog 
+      {/* CreateTaskDialog TESTE */}
+      <CreateTaskDialogTest 
         isOpen={isCreateDialogOpen}
         onClose={() => {
-          console.log("✅ Fechando CreateTaskDialog")
+          console.log("✅ Fechando CreateTaskDialogTest")
           setIsCreateDialogOpen(false)
         }}
         onTaskCreated={handleTaskCreated}
