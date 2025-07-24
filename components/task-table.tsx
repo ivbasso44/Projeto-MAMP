@@ -264,6 +264,42 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
       </Dialog>
 
       <div className="flex flex-col gap-4">
+        {/* Teste de Funcionalidade dos Botões */}
+        <div className="bg-yellow-100 p-4 rounded-lg border">
+          <h3 className="font-bold mb-2">🔧 TESTE DOS BOTÕES:</h3>
+          <div className="flex gap-2 flex-wrap">
+            <button 
+              onClick={() => {
+                console.log("✅ Botão HTML básico funcionou!")
+                alert("✅ HTML Button OK!")
+              }}
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+            >
+              Teste HTML
+            </button>
+            
+            <Button 
+              onClick={() => {
+                console.log("✅ Button component funcionou!")
+                alert("✅ Button Component OK!")
+              }}
+              variant="outline"
+            >
+              Teste Button Component
+            </Button>
+            
+            <Button 
+              onClick={() => {
+                console.log("✅ Teste de função setIsCreateTaskDialogOpen")
+                setIsCreateTaskDialogOpen(true)
+              }}
+              variant="default"
+            >
+              Teste Abrir Dialog
+            </Button>
+          </div>
+        </div>
+
         <div className="flex items-center justify-between">
           <Input placeholder="Buscar tarefas..." value={searchTerm} onChange={(e: { target: { value: SetStateAction<string> } }) => setSearchTerm(e.target.value)} />
           <div className="flex items-center space-x-2">
