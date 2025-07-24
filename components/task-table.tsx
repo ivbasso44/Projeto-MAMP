@@ -11,12 +11,9 @@ import {
 } from "@tanstack/react-table"
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table"
-// Update the import path if the file is located elsewhere, for example:
 import { Button } from "../components/ui/button"
-// Or, if the file does not exist, create 'button.tsx' in 'components/ui' with the Button component.
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../components/ui/dialog"
 import { Input } from "../components/ui/input"
-import { useToast } from "../components/ui/use-toast"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,34 +21,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu"
-import { ArrowDown, ArrowUp, Import, MoreHorizontal, Share2 } from "lucide-react"
-// import type { taskSchema } from "@/lib/validations/task"
-// Atualize o caminho abaixo para o local correto do seu arquivo de validação de tarefas
-// import type { taskSchema } from "../lib/validations/task"
-// Atualize o caminho abaixo para o local correto do seu arquivo de validação de tarefas
-// import { taskSchema } from "../lib/validations/task"
-// Corrija o caminho abaixo para o local correto do seu arquivo de validação de tarefas
-// Update the path below to the correct location of your task validation schema
-// import { taskSchema } from "../lib/validations/task"
-// Update the path below to the correct location of your task validation schema
-// import { taskSchema } from "../lib/validations/task"
-// Update the path below to the correct location of your task validation schema
-import { taskSchema, createTaskSchema, CreateTaskFormData } from "../lib/validations/task"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../components/ui/form"
-import { Textarea } from "../components/ui/textarea"
-import { DatePicker } from "../components/ui/date-picker"
-// Simple cn utility to join class names
-function cn(...classes: (string | undefined | false | null)[]) {
-  return classes.filter(Boolean).join(" ");
-}
-import { format } from "date-fns"
-import { ExportTasks } from "../components/export-tasks"
-import { ImportTasks } from "../components/import-tasks"
-import { Trash2 } from "lucide-react"
-import { useRouter } from "next/navigation" // Importe useRouter
+import { ArrowDown, ArrowUp, Import, MoreHorizontal, Share2, Trash2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -63,13 +34,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../components/ui/alert-dialog"
+import { format } from "date-fns"
 
 import { AggregatedTaskDisplay } from "../types/supabase"
-import { createTask } from "../actions/tasks"
 import { CreateTaskDialog } from "./create-task-dialog"
 import { toast } from "sonner"
-
-export type Task = z.infer<typeof taskSchema>
 
 interface TaskTableProps {
   initialTasks: AggregatedTaskDisplay[]
@@ -219,90 +188,42 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
     },
   })
 
-  const createTaskFormSchema = z.object({
-    name: z.string().min(2, {
-      message: "Nome deve ter pelo menos 2 caracteres.",
-    }),
-    workStations: z.array(z.string()).min(1, {
-      message: "Selecione pelo menos um posto de trabalho.",
-    }),
-    frequencyDays: z.number().min(1, {
-      message: "Frequência deve ser pelo menos 1 dia.",
-    }),
-  })
-
-  type CreateTaskFormValues = z.infer<typeof createTaskFormSchema>
-
-  const createTaskForm = useForm<CreateTaskFormValues>({
-    resolver: zodResolver(createTaskFormSchema),
-    defaultValues: {
-      name: "",
-      workStations: [],
-      frequencyDays: 1,
-    },
-  })
-
-  const handleCreateTask = async (data: CreateTaskFormValues) => {
+  const handleDeleteAllTasks = async () => {
     try {
-      const result = await createTask({
-        name: data.name,
-        workStations: data.workStations,
-        frequencyDays: data.frequencyDays
-      })
-      
+      const tasksActions = await import("../actions/tasks")
+      // Delete all tasks by calling deleteTask for each instance
+      let success = true
+      let message = "Todas as tarefas foram excluídas com sucesso."
+      for (const task of tasks) {
+        const result = await tasksActions.deleteTask(task.id)
+        if (!result.success) {
+          success = false
+          message = result.message || "Erro ao excluir uma ou mais tarefas."
+          break
+        }
+      }
+      const result = { success, message }
+
       if (result.success) {
-        toast.success("Tarefa criada com sucesso!", {
-          description: result.message || "A nova tarefa foi adicionada à sua lista.",
+        setTasks([]) // Limpa o estado local das tarefas
+        toast.success("Sucesso!", {
+          description: result.message,
         })
-        createTaskForm.reset()
-        setIsCreateTaskDialogOpen(false)
-        window.location.reload() // Refresh the page to show the new task
+        window.location.reload() // Força a revalidação dos dados no servidor
       } else {
-        toast.error("Erro ao criar tarefa", {
-          description: result.message || "Ocorreu um erro inesperado.",
+        toast.error("Erro ao Excluir", {
+          description: result.message || "Não foi possível excluir todas as tarefas.",
         })
       }
     } catch (error) {
-      console.error("Error creating task:", error)
-      toast.error("Erro ao criar tarefa", {
-        description: "Ocorreu um erro inesperado. Tente novamente.",
-      })
-    }
-  }
-
-  const handleDeleteAllTasks = async () => {
-    // Atualize o caminho abaixo para o local correto do seu arquivo de actions
-    // Certifique-se de que o nome da função corresponde ao export do arquivo ../actions/tasks
-            const tasksActions = await import("../actions/tasks")
-            // Delete all tasks by calling deleteTask for each instance
-            let success = true
-            let message = "Todas as tarefas foram excluídas com sucesso."
-            for (const task of tasks) {
-              const result = await tasksActions.deleteTask(task.id)
-              if (!result.success) {
-                success = false
-                message = result.message || "Erro ao excluir uma ou mais tarefas."
-                break
-              }
-            }
-            const result = { success, message }
-
-    if (result.success) {
-      setTasks([]) // Limpa o estado local das tarefas
-      toast.success("Sucesso!", {
-        description: result.message,
-      })
-      window.location.reload() // Força a revalidação dos dados no servidor
-    } else {
-      toast.error("Erro ao Excluir", {
-        description: result.message || "Não foi possível excluir todas as tarefas.",
-      })
+      console.error("Error deleting tasks:", error)
+      toast.error("Erro inesperado ao excluir tarefas.")
     }
   }
 
   const handleTaskCreated = (newTask: any) => {
     // Refresh the page to show the new task
-    router.refresh()
+    window.location.reload()
   }
 
   return (
