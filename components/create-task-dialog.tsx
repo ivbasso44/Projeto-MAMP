@@ -21,7 +21,7 @@ import { createTask } from "../actions/tasks"
 import { TASK_NAME_OPTIONS, WORK_STATION_OPTIONS } from "../lib/constants"
 import { ChevronsUpDown } from "lucide-react"
 import type { TaskWithDefinition } from "../types/supabase" // Corrigido o caminho do import
-import { useToast } from "../hooks/use-toast"
+import { toast } from "sonner"
 
 interface CreateTaskDialogProps {
   isOpen: boolean
@@ -29,13 +29,8 @@ interface CreateTaskDialogProps {
   onTaskCreated: (newInstance: TaskWithDefinition) => void // Alterado para TaskWithDefinition
 }
 
-export function CreateTaskDialog({ isOpen, onClose, onTaskCreated }: CreateTaskDialogProps) {
-  const [taskName, setTaskName] = useState<string>("")
-  const [selectedWorkStations, setSelectedWorkStations] = useState<string[]>([])
-  const [frequencyDays, setFrequencyDays] = useState<string>("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const { toast } = useToast()
+export function CreateTaskDialog({ trigger, onTaskCreated }: CreateTaskDialogProps) {
+  const [isOpen, setIsOpen] = useState(false)
 
   const handleSubmit = async () => {
     setError(null)

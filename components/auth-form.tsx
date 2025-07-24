@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 // Update the import path if the Button component is located elsewhere, for example:
 import { Button } from "../components/ui/button"
 // Or, if the correct path is different, adjust accordingly:
@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../co
 import Link from "next/link"
 import { useActionState } from "react"
 // Update the import path below to the correct relative path for use-toast
-import { useToast } from "../hooks/use-toast"
+import { toast } from "sonner"
 import { useRouter } from "next/navigation" // Importe useRouter
 
 interface AuthFormProps {
@@ -20,9 +20,9 @@ interface AuthFormProps {
 }
 
 export function AuthForm({ type, action }: AuthFormProps) {
-  const [state, formAction, isPending] = useActionState(action, null)
-  const { toast } = useToast()
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const [state, formAction, isPending] = useActionState(action, null)
 
   const title = type === "sign-in" ? "Entrar" : "Criar Conta"
   const description = type === "sign-in" ? "Acesse sua conta para continuar." : "Crie uma nova conta para começar."
