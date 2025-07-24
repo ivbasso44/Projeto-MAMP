@@ -1,5 +1,5 @@
 import { getTasks } from "../actions/tasks"
-import { TaskTableStep2 } from "../components/task-table-step2"
+import { TaskTableStep3 } from "../components/task-table-step3"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 // import { TaskCalendar } from "../components/task-calendar"
@@ -108,7 +108,7 @@ export default async function HomePage() {
               <CardDescription>Gerencie suas tarefas e acompanhe o progresso</CardDescription>
             </CardHeader>
             <CardContent>
-              <TaskTableStep2 />
+              <TaskTableStep3 />
             </CardContent>
           </Card>
         </TabsContent>
