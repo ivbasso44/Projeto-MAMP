@@ -1,9 +1,9 @@
 import { getTasks } from "../actions/tasks"
-import { TaskTable } from "../components/task-table"
+import { TaskTableSimple } from "../components/task-table-simple"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
-import { TaskCalendar } from "../components/task-calendar"
-import { GanttChart } from "../components/gantt-chart"
+// import { TaskCalendar } from "../components/task-calendar"
+// import { GanttChart } from "../components/gantt-chart"
 import type { TaskInstance, TaskWithDefinition } from "../types/supabase"
 import type { AggregatedTaskDisplay } from "../types/supabase"
 
@@ -108,7 +108,7 @@ export default async function HomePage() {
               <CardDescription>Gerencie suas tarefas e acompanhe o progresso</CardDescription>
             </CardHeader>
             <CardContent>
-              <TaskTable initialTasks={initialTasks} />
+              <TaskTableSimple />
             </CardContent>
           </Card>
         </TabsContent>
@@ -120,7 +120,9 @@ export default async function HomePage() {
               <CardDescription>Visualize suas tarefas em formato de calendário</CardDescription>
             </CardHeader>
             <CardContent>
-              <TaskCalendar tasks={initialTasks} />
+              <div className="p-4 text-center">
+                <p>Calendário temporariamente desabilitado para debug</p>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -132,7 +134,9 @@ export default async function HomePage() {
               <CardDescription>Visualize o cronograma das tarefas</CardDescription>
             </CardHeader>
             <CardContent>
-              <GanttChart tasks={initialTasks} />
+              <div className="p-4 text-center">
+                <p>Gantt temporariamente desabilitado para debug</p>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
