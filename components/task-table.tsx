@@ -222,15 +222,21 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
   }
 
   const handleTaskCreated = (newTask: any) => {
+    console.log("Tarefa criada:", newTask)
     // Refresh the page to show the new task
     window.location.reload()
   }
+
+  console.log("TaskTable renderizado, isCreateTaskDialogOpen:", isCreateTaskDialogOpen)
 
   return (
     <>
       <CreateTaskDialog 
         isOpen={isCreateTaskDialogOpen}
-        onClose={() => setIsCreateTaskDialogOpen(false)}
+        onClose={() => {
+          console.log("Fechando dialog CreateTask")
+          setIsCreateTaskDialogOpen(false)
+        }}
         onTaskCreated={handleTaskCreated}
       />
 
@@ -259,7 +265,10 @@ export function TaskTable({ initialTasks }: TaskTableProps) {
               <Share2 className="mr-2 h-4 w-4" />
               Exportar (em desenvolvimento)
             </Button>
-            <Button onClick={() => setIsCreateTaskDialogOpen(true)} className="w-full sm:w-auto">
+            <Button onClick={() => {
+              console.log("Botão Criar Nova Tarefa clicado!")
+              setIsCreateTaskDialogOpen(true)
+            }} className="w-full sm:w-auto">
               Criar Nova Tarefa
             </Button>
             <AlertDialog>

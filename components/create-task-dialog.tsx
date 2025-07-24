@@ -29,6 +29,8 @@ interface CreateTaskDialogProps {
 }
 
 export function CreateTaskDialog({ isOpen, onClose, onTaskCreated }: CreateTaskDialogProps) {
+  console.log("CreateTaskDialog renderizado, isOpen:", isOpen)
+  
   const [taskName, setTaskName] = useState("")
   const [selectedWorkStations, setSelectedWorkStations] = useState<string[]>([])
   const [frequencyDays, setFrequencyDays] = useState("")
@@ -36,6 +38,7 @@ export function CreateTaskDialog({ isOpen, onClose, onTaskCreated }: CreateTaskD
   const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async () => {
+    console.log("HandleSubmit chamado!")
     setError(null)
     setIsLoading(true)
 
@@ -184,7 +187,13 @@ export function CreateTaskDialog({ isOpen, onClose, onTaskCreated }: CreateTaskD
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
             Cancelar
           </Button>
-          <Button onClick={handleSubmit} disabled={isLoading}>
+          <Button 
+            onClick={() => {
+              console.log("Botão Criar Tarefa clicado no dialog!")
+              handleSubmit()
+            }} 
+            disabled={isLoading}
+          >
             {isLoading ? "Criando..." : "Criar Tarefa"}
           </Button>
         </DialogFooter>
